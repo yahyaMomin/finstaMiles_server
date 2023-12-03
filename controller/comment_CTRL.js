@@ -23,7 +23,7 @@ export const getComments = async (req, res) => {
     }
 
     const comments = await CommentModel.find({ post: postId }).sort(sort).populate("commentedBy");
-    res.status(200).json({ comments });
+    res.status(200).json({ status: "success ", comments });
   } catch (error) {
     res.status(500).json({ status: "error", msg: error.message });
   }
@@ -36,15 +36,15 @@ export const createComment = async (req, res) => {
 
     const post = await PostModel.findById(postId);
 
-    if (!post) return res.status(404).json({ msg: "post does not exist" });
+    if (!post) return res.status(500).json({ status: "error", msg: "post does not exist" });
 
-    const newComment = await new CommentModel({
+    const newComment = new CommentModel({
       post: postId,
       comment,
       commentedBy: userId,
     });
 
-    await post.comments.push(newComment._id);
+    post.comments.push(newComment._id);
 
     await newComment.save();
     await post.save();
@@ -52,6 +52,7 @@ export const createComment = async (req, res) => {
     const comments = await CommentModel.find({ post: post._id }).populate("commentedBy");
 
     res.status(201).json({
+      status: "success",
       msg: "new comment Added",
       comments,
     });
@@ -94,8 +95,6 @@ export const likeUnlikeComment = async (req, res) => {
   try {
     const { commentId } = req.body;
     const { userId } = req.header;
-    // const { sortBy } = req.params;
-
     const comment = await CommentModel.findById(commentId);
     const user = await userModel.findById(userId);
 
@@ -104,23 +103,7 @@ export const likeUnlikeComment = async (req, res) => {
     } else {
       comment.likes.push(userId);
     }
-
-    // let sort = {};
-    // switch (sortBy) {
-    //   case "newest":
-    //     sort = { createdAt: 1 };
-    //     break;
-    //   case "oldest":
-    //     sort = { createdAt: -1 };
-    //     break;
-    //   case "top":
-    //     sort = { likes: -1 };
-    //   default:
-    //     sort = { likes: -1 };
-    // }
-
     await comment.save();
-    // const comments = await CommentModel.find({ post: postId }).sort(sort).populate("commentedBy");
 
     res.status(200).json({ status: "success", comment });
   } catch (error) {

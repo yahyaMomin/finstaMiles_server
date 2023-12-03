@@ -8,9 +8,9 @@ export const createReply = async (req, res) => {
 
     const comment = await CommentModel.findById(commentId);
 
-    if (!comment) return res.status(404).json({ msg: "comment not exist" });
+    if (!comment) return res.status(500).json({ status: "error", msg: "comment not exist" });
 
-    const newReply = await new RepliesModel({
+    const newReply = new RepliesModel({
       post: comment.post,
       replyBy: userId,
       comment: commentId,
@@ -23,6 +23,7 @@ export const createReply = async (req, res) => {
     await comment.save();
 
     res.status(201).json({
+      status: "success",
       msg: "replied success !",
       newReply,
     });
@@ -33,7 +34,6 @@ export const createReply = async (req, res) => {
 
 export const getReplies = async (req, res) => {
   try {
-    const { userId } = req.header;
     const { commentId } = req.params;
 
     const replies = await RepliesModel.find({ comment: commentId }).populate("replyBy");

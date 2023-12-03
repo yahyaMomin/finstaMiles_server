@@ -6,9 +6,9 @@ import userModel from "../models/userModel.js";
 
 export const createPost = async (req, res) => {
   try {
-    let { description } = req.body;
+    let { description, url } = req.body;
     const { userId } = req.header;
-    const image = req.file.filename;
+    console.log(description, url);
 
     const date = new Date();
 
@@ -16,15 +16,15 @@ export const createPost = async (req, res) => {
 
     const user = await userModel.findById(userId).select("-password");
 
-    if (!user) return res.json({ msg: "user not exist" });
+    if (!user) return res.status(500).json({ status: "error", msg: "user not exist" });
 
-    const newPost = await new postModel({
+    const newPost = new postModel({
       postedBy: userId,
       description,
-      image,
+      image: url,
     });
 
-    await user.posts.push(newPost._id);
+    user.posts.push(newPost._id);
     await newPost.save();
     await user.save();
 
@@ -46,7 +46,7 @@ export const updatePost = async (req, res) => {
     const post = await postModel.findById(postId);
     const author = post.postedBy.toString();
 
-    if (author !== userId) return res.status(403).json({ msg: "unAuthorize" });
+    if (author !== userId) return res.status(500).json({ status: "error", msg: "unAuthorize" });
     post.description = description;
     const updatedPost = await post.save();
 
@@ -67,11 +67,11 @@ export const deletePost = async (req, res) => {
 
     const post = await postModel.findById(postId);
     const user = await userModel.findById(userId).select("-password");
-    if (userId !== post.postedBy.toString()) return res.status(403).json({ msg: "unAuthorize" });
+    if (userId !== post.postedBy.toString()) return res.status(500).json({ msg: "unAuthorize" });
 
     await CommentModel.deleteMany({ post: postId });
 
-    user.posts = await user.posts.filter((item) => {
+    user.posts = user.posts.filter((item) => {
       const string = item.toString();
       return string !== postId;
     });
@@ -126,7 +126,7 @@ export const getFeedPosts = async (req, res) => {
       .limit(limit)
       .populate("postedBy");
 
-    res.status(200).json(posts);
+    res.status(200).json({ status: "success", posts });
   } catch (error) {
     res.status(500).json({ status: "error", msg: error.message });
   }
@@ -146,7 +146,7 @@ export const getUserPosts = async (req, res) => {
       .limit(limit)
       .populate("postedBy");
 
-    res.status(200).json(posts);
+    res.status(200).json({ status: "success", posts });
   } catch (error) {
     res.status(500).json({ status: "error", msg: error.message });
   }
@@ -161,8 +161,8 @@ export const likeUnlikePost = async (req, res) => {
     const user = await userModel.findById(userId);
 
     if (post.likes.includes(user._id)) {
-      post.likes = await post.likes.filter((item) => item.toString() !== userId);
-      user.liked = await user.liked.filter((item) => item.toString() !== postId);
+      post.likes = post.likes.filter((item) => item.toString() !== userId);
+      user.liked = user.liked.filter((item) => item.toString() !== postId);
     } else {
       post.likes.push(userId);
       user.liked.push(postId);
