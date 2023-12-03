@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       require: true,
       default:
-        "https://firebasestorage.googleapis.com/v0/b/finstamiles-app.appspot.com/o/users%2Ficon-1633249_1280.png?alt=media&token=c854f715-03d6-49f0-8a4e-fab98c52b9db",
+        "https://firebasestorage.googleapis.com/v0/b/finstamiles-app.appspot.com/o/users%2Fdefault.jpeg?alt=media&token=758cb4cf-acf9-4bdc-a626-b87ad1a1ecd0",
     },
     role: { type: String, default: "user" },
     bio: { type: String, default: "", max: 200 },
