@@ -23,7 +23,7 @@ export const updateProfile = async (req, res) => {
 
     const avatar = url ? url : existedUser.avatar;
 
-    const newUserName = await userName.replace(/ /g, "_").toLowerCase();
+    const newUserName = await userName.replace(/ /g, "_");
     const newFullName = await fullName.replace(/\s+/g, " ").trim();
     const newBio = await bio.replace(/\s+/g, " ").trim();
 

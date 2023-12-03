@@ -27,6 +27,8 @@ export const register = async (req, res) => {
       password: hashPass,
     });
 
+    const token = jwt.sign({ id: newUser._id }, process.env.ACCESS_SECRET_TOKEN, { expiresIn: "30d" });
+
     await newUser.save();
 
     res.status(201).json({
@@ -35,6 +37,7 @@ export const register = async (req, res) => {
         ...newUser._doc,
         password: "",
       },
+      token,
     });
   } catch (err) {
     res.status(500).json({ status: "error", msg: err.message });
